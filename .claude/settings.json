@@ -12,6 +12,8 @@
       "Read(./.env)",
       "Read(./.env.local)",
       "Read(./.env.production)",
+      "Read(./.env.development)",
+      "Read(./.env.staging)",
       "Bash(docker compose down -v:*)",
       "Bash(git push --force:*)",
       "Bash(git push -f:*)",

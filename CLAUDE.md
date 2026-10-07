@@ -31,7 +31,7 @@ If a task seems to need something in the right column: stop, add it to `PARKING_
 - Python 3.11+, managed with `uv` (`pyproject.toml`, lockfile committed)
 - Official MCP Python SDK (`mcp`)
 - `psycopg` 3 with `psycopg_pool`. **Plain SQL, no ORM.**
-- `sentence-transformers` for embeddings
+- `fastembed` for embeddings (ONNX, no torch)
 - `pytest` for tests, `ruff` for lint and format, `mypy` (non-strict to start)
 - Docker Compose with the `pgvector/pgvector:pg16` image
 

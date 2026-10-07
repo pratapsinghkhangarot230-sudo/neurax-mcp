@@ -137,7 +137,7 @@ Users add a short instruction block to their own project's `CLAUDE.md` / `.curso
 
 | Variable | Default | Purpose |
 |---|---|---|
-| `DATABASE_URL` | `postgresql://neurax:neurax@localhost:5432/neurax` | Postgres connection |
+| `DATABASE_URL` | `postgresql://neurax:neurax@127.0.0.1:5432/neurax` | Postgres connection |
 | `NEURAX_USER_EMAIL` | (required) | Local-mode user identity, created on first run |
 | `NEURAX_EMBED_MODEL` | `BAAI/bge-small-en-v1.5` | Must output 384 dims to match the schema |
 | `NEURAX_CONFLICT_THRESHOLD` | `0.80` | Cosine similarity for `possible_conflicts` |

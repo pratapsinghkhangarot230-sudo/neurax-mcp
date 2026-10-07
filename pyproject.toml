@@ -1,0 +1,31 @@
+[project]
+name = "neurax"
+version = "0.1.0"
+description = "Decision memory for AI coding agents"
+requires-python = ">=3.11"
+license = "Apache-2.0"
+dependencies = [
+    "psycopg[binary]>=3.2",
+    "psycopg-pool>=3.2",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8",
+    "ruff>=0.6",
+    "mypy>=1.11",
+]
+
+[build-system]
+requires = ["uv_build>=0.8,<0.13"]
+build-backend = "uv_build"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+
+[tool.mypy]
+python_version = "3.11"

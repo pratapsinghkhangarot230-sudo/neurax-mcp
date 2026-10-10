@@ -33,13 +33,13 @@ Register the server once for your user, so every project can use it. Replace the
 the path:
 
 ```powershell
-claude mcp add --transport stdio --scope user --env NEURAX_USER_EMAIL=you@example.com neurax -- uv --directory C:\path\to\neurax run python -m neurax.server
+claude mcp add --scope user --env NEURAX_USER_EMAIL=you@example.com --transport stdio neurax -- uv --directory C:\path\to\neurax run python -m neurax.server
 ```
 
 - `NEURAX_USER_EMAIL` is your identity in Neurax; all your projects and memories belong to it.
 - `uv --directory` runs the server from the Neurax folder, whatever project Claude Code is in.
 - The defaults connect to the Docker Postgres on `127.0.0.1:5432`. To use another database,
-  add `--env DATABASE_URL=postgresql://...` before `neurax`.
+  add `--env DATABASE_URL=postgresql://...` next to the other `--env`, before `--transport`.
 
 Check it:
 

@@ -130,3 +130,17 @@ Each phase ends with a short demo and Pratap's sign-off.
 - [ ] **3. Ranking + contradiction check:** the hybrid scoring query in `ranking.py`, with weights in config; `save_context` returns similar active memories in the same topic or above the similarity threshold; decision-drift tests.
 - [ ] **4. Benchmark:** `bench/`: a small public decision-drift dataset (projects whose decisions change over time) and a script comparing Neurax against flat memory (same store, no supersession). Report accuracy of "answers with the current decision".
 - [ ] **5. Launch prep:** one-command install, README with a GIF demo, license (Apache-2.0), examples.
+
+## 11. Project memory (Neurax, dogfooding)
+
+This project's decisions live in Neurax under the project slug `neurax`.
+
+- **Start of every session:** call `get_project_context("neurax")` and treat the result
+  as the current state of the project. If the project doesn't exist, call `list_projects`,
+  then `create_project` if needed.
+- **During work:** when a past decision matters, call `search_context` before assuming.
+- **End of every session:** call `save_context` once per decision, constraint, fact or task
+  that came up. One statement per call, with a rationale for decisions, a short topic
+  (e.g. `database`, `auth/session-store`) and `source_tool: "claude-code"`.
+- **After each save:** review `possible_conflicts`. If the new memory replaces one of them,
+  call `supersede(old_id, new_id)`. Never re-save an old decision to "update" it.

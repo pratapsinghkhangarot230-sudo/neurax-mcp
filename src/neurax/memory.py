@@ -6,6 +6,7 @@ Memories are never edited; a changed decision is a new memory plus neurax_supers
 
 import logging
 import re
+from collections.abc import Sequence
 from datetime import datetime
 from typing import Any
 from uuid import UUID
@@ -317,7 +318,7 @@ def search(
     query: str,
     limit: int = 8,
     include_history: bool = False,
-    types: list[str] | None = None,
+    types: Sequence[str] | None = None,
 ) -> list[dict[str, Any]]:
     """Simple hybrid search: vector + keyword candidates, scored by similarity + text rank.
 
@@ -373,7 +374,7 @@ def search(
                 "emb": vector,
                 "query": query,
                 "include_history": include_history,
-                "types": types,
+                "types": list(types) if types is not None else None,  # text[] needs a list
                 "limit": limit,
             },
         ).fetchall()
@@ -395,6 +396,39 @@ def history(user_id: UUID, project: str, topic: str) -> list[dict[str, Any]]:
             (user_id, project_id, topic),
         ).fetchall()
     return [_out(r) for r in rows]
+
+
+def get_project_context(user_id: UUID, project: str, limit: int = 30) -> dict[str, Any]:
+    """The project's current state: pinned first, then constraints and decisions, then tasks.
+
+    Never includes superseded memories. Unpinned facts are left out (use search for them).
+    """
+    if not 1 <= limit <= 100:
+        raise InvalidInput("limit must be between 1 and 100")
+    with transaction() as conn:
+        # Project header; also the not-found check.
+        proj = conn.execute(
+            """SELECT id, slug, name, description FROM projects
+                WHERE user_id = %s AND slug = %s AND archived_at IS NULL""",
+            (user_id, project),
+        ).fetchone()
+        if proj is None:
+            raise ProjectNotFound(f"project {project!r} not found; call list_projects")
+        # Current memories in session-start priority order, each group newest first.
+        rows = conn.execute(
+            """SELECT id, type, topic, content, rationale, status, pinned, source_tool,
+                      created_at, supersedes_id
+                 FROM memories
+                WHERE user_id = %s AND project_id = %s AND status = 'active'
+                  AND (pinned OR type IN ('constraint', 'decision', 'task'))
+                ORDER BY pinned DESC, type = 'task', created_at DESC, id
+                LIMIT %s""",
+            (user_id, proj["id"], limit),
+        ).fetchall()
+    return {
+        "project": {k: proj[k] for k in ("slug", "name", "description")},
+        "memories": [_out(r) for r in rows],
+    }
 
 
 def pin(user_id: UUID, memory_id: UUID | str) -> dict[str, Any]:

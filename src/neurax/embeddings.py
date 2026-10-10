@@ -10,7 +10,7 @@ from neurax import config
 @cache
 def _model() -> TextEmbedding:
     # Loaded once per process: first call downloads/loads the ONNX model (slow).
-    return TextEmbedding(model_name=config.EMBED_MODEL)
+    return TextEmbedding(model_name=config.EMBED_MODEL, cache_dir=config.MODEL_CACHE)
 
 
 def embed(texts: list[str]) -> list[list[float]]:

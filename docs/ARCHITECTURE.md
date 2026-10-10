@@ -54,15 +54,17 @@ Returns the user's non-archived projects: slug, name, description, active memory
 Creates a project. Errors if the slug exists. The slug must match `^[a-z0-9][a-z0-9-]{0,62}$`.
 
 ### `get_project_context(project, limit=30)`
-**Agents call this at the start of a session.** Returns pinned memories first, then active `constraint` and `decision` memories newest first, then open `task`s, up to `limit`. Superseded memories are never included. This is the "current state of the project" in one call.
+**Agents call this at the start of a session.** Returns pinned memories first, then active `constraint` and `decision` memories newest first, then open `task`s, up to `limit`. Superseded memories are never included. Unpinned `fact`s are left out (agents find them with `search_context`). This is the "current state of the project" in one call.
+
+Response: `{"project": {"slug", "name", "description"}, "memories": [{...}]}`
 
 ### `save_context(project, content, type, topic, rationale?, supersedes_id?, source_tool?)`
 Saves one memory. **Agents call this at the end of a session, once per decision, constraint, fact or task.**
 - If `supersedes_id` is given, save and supersede happen in one transaction.
-- If identical active content already exists in the project, return the existing memory with `"duplicate": true` instead of erroring.
+- If identical active content already exists in the project, return the existing memory with `"duplicate": true` instead of erroring. If `supersedes_id` was also given, nothing is superseded and the response carries a `note` saying so.
 - **Contradiction check:** the response includes `possible_conflicts`, up to 5 *other* active memories in the same project that share the topic **or** have cosine similarity ≥ `NEURAX_CONFLICT_THRESHOLD` (default 0.80). The tool result tells the agent: *"If the new memory replaces any of these, call supersede(old_id, new_id)."* Neurax does not decide; the calling model does.
 
-Response: `{"memory": {...}, "duplicate": false, "possible_conflicts": [{...}]}`
+Response: `{"memory": {...}, "duplicate": false, "possible_conflicts": [{...}]}`, plus `"hint"` when `possible_conflicts` is non-empty.
 
 ### `supersede(old_id, new_id)`
 Calls `neurax_supersede`. Errors are passed through as readable messages ("already superseded", "different projects", "memory not found").
@@ -140,6 +142,7 @@ Users add a short instruction block to their own project's `CLAUDE.md` / `.curso
 | `DATABASE_URL` | `postgresql://neurax:neurax@127.0.0.1:5432/neurax` | Postgres connection |
 | `NEURAX_USER_EMAIL` | (required) | Local-mode user identity, created on first run |
 | `NEURAX_EMBED_MODEL` | `BAAI/bge-small-en-v1.5` | Must output 384 dims to match the schema |
+| `NEURAX_MODEL_CACHE` | `%LOCALAPPDATA%\neurax\models` (Windows), `~/.cache/neurax/models` (elsewhere) | Where fastembed downloads the model. A fixed path, so a cleaned temp dir never forces a re-download at server start |
 | `NEURAX_CONFLICT_THRESHOLD` | `0.80` | Cosine similarity for `possible_conflicts` |
 | `NEURAX_W_VEC` / `_W_TEXT` / `_W_RECENT` / `_W_PIN` | `0.55 / 0.25 / 0.10 / 0.10` | Ranking weights |
 | `NEURAX_HALF_LIFE_DAYS` | `30` | Recency decay |

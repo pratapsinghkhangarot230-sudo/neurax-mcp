@@ -224,3 +224,39 @@ def test_other_user_cannot_see_or_touch_memories(user_id: UUID, project: str) ->
         memory.supersede(other, mine["id"], theirs["id"])
     with pytest.raises(MemoryNotFound):
         memory.pin(other, mine["id"])
+
+
+# --------------------------------------------------------------------------- project context
+
+
+def test_get_project_context_order_and_filtering(user_id: UUID, project: str) -> None:
+    task = save(user_id, project, "Add rate limiting", topic="api", type="task")["memory"]
+    old = save(user_id, project, "Use Redis")["memory"]
+    decision = save(user_id, project, "Use Postgres", supersedes_id=old["id"])["memory"]
+    fact = save(user_id, project, "Deployed on Fly.io", topic="hosting", type="fact")["memory"]
+    pinned_fact = save(user_id, project, "Region is bom", topic="hosting", type="fact")["memory"]
+    memory.pin(user_id, pinned_fact["id"])
+    constraint = save(user_id, project, "No paid APIs", topic="budget", type="constraint")["memory"]
+
+    ctx = memory.get_project_context(user_id, project)
+    assert ctx["project"] == {"slug": project, "name": "Demo project", "description": None}
+    # Pinned first, then constraints/decisions newest first, then tasks.
+    # Superseded (old) and unpinned facts are left out.
+    assert [m["id"] for m in ctx["memories"]] == [
+        pinned_fact["id"],
+        constraint["id"],
+        decision["id"],
+        task["id"],
+    ]
+    assert old["id"] not in [m["id"] for m in ctx["memories"]]
+    assert fact["id"] not in [m["id"] for m in ctx["memories"]]
+
+    limited = memory.get_project_context(user_id, project, limit=2)
+    assert [m["id"] for m in limited["memories"]] == [pinned_fact["id"], constraint["id"]]
+
+
+def test_get_project_context_errors(user_id: UUID, project: str) -> None:
+    with pytest.raises(ProjectNotFound, match="call list_projects"):
+        memory.get_project_context(user_id, "nope")
+    with pytest.raises(InvalidInput, match="limit"):
+        memory.get_project_context(user_id, project, limit=0)

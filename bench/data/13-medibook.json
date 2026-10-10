@@ -1,0 +1,24 @@
+{
+  "slug": "medibook",
+  "name": "Medibook clinic appointment booking",
+  "split": "heldout",
+  "events": [
+    {"id": "e1", "day": 0, "type": "decision", "topic": "backend/framework", "content": "Build the booking backend with Django"},
+    {"id": "e2", "day": 3, "type": "decision", "topic": "sms", "content": "Send appointment reminders by SMS through Twilio"},
+    {"id": "e3", "day": 6, "type": "constraint", "topic": "compliance", "content": "All patient data is handled to HIPAA standards under a signed BAA"},
+    {"id": "e4", "day": 9, "type": "decision", "topic": "calendar", "content": "Sync clinician calendars with Google Calendar"},
+    {"id": "e5", "day": 12, "type": "decision", "topic": "database", "content": "Keep data for all clinics in one shared Postgres database"},
+    {"id": "e6", "day": 40, "type": "decision", "topic": "tenancy", "content": "Give each clinic its own Postgres schema for data isolation", "rationale": "Clinics asked for stronger separation of patient records", "supersedes": "e5"},
+    {"id": "e7", "day": 60, "type": "decision", "topic": "notifications", "content": "Send appointment reminders by SMS and email through Twilio and SendGrid, with patient opt-out", "rationale": "SMS-only reminders missed patients without mobile phones", "supersedes": "e2"},
+    {"id": "e8", "day": 75, "type": "decision", "topic": "calendar", "content": "Sync clinician calendars with Google Calendar and Microsoft 365", "supersedes": "e4"},
+    {"id": "e9", "day": 90, "type": "task", "topic": "waitlist", "content": "Add a waitlist that offers cancelled slots to waiting patients"},
+    {"id": "e10", "day": 100, "type": "fact", "topic": "hosting", "content": "Hosted on AWS in us-east-1 under the BAA"}
+  ],
+  "questions": [
+    {"q": "How is each clinic's data kept separate?", "answer": "e6"},
+    {"q": "How are patients reminded of appointments?", "answer": "e7"},
+    {"q": "Which calendars do we sync with?", "answer": "e8"},
+    {"q": "What web framework is the backend built on?", "answer": "e1"},
+    {"q": "What compliance standard applies to patient data?", "answer": "e3"}
+  ]
+}

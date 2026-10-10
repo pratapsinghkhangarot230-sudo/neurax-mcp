@@ -1,0 +1,25 @@
+{
+  "slug": "podcastr",
+  "name": "Podcastr podcast hosting",
+  "split": "heldout",
+  "events": [
+    {"id": "e1", "day": 0, "type": "decision", "topic": "audio-storage", "content": "Store audio files in AWS S3"},
+    {"id": "e2", "day": 3, "type": "decision", "topic": "cdn", "content": "Serve audio through CloudFront"},
+    {"id": "e3", "day": 6, "type": "decision", "topic": "transcoding", "content": "Transcode uploads to MP3 with ffmpeg on the web server"},
+    {"id": "e4", "day": 9, "type": "decision", "topic": "analytics", "content": "Count downloads from CloudFront logs"},
+    {"id": "e5", "day": 12, "type": "fact", "topic": "feeds", "content": "RSS feeds are generated on every request"},
+    {"id": "e6", "day": 40, "type": "decision", "topic": "media-pipeline", "content": "Transcode uploads in a separate worker queue with ffmpeg, producing MP3 and AAC", "rationale": "Long uploads blocked web requests", "supersedes": "e3"},
+    {"id": "e7", "day": 55, "type": "decision", "topic": "storage", "content": "Move audio files from S3 to Cloudflare R2 to remove egress fees", "rationale": "Egress was 70% of the AWS bill", "supersedes": "e1"},
+    {"id": "e8", "day": 56, "type": "decision", "topic": "cdn", "content": "Serve audio through Cloudflare's CDN", "supersedes": "e2"},
+    {"id": "e9", "day": 70, "type": "decision", "topic": "analytics", "content": "Count downloads using IAB Podcast Measurement v2.2 rules", "rationale": "Advertisers require IAB-certified numbers", "supersedes": "e4"},
+    {"id": "e10", "day": 85, "type": "fact", "topic": "feeds", "content": "RSS feeds are cached and rebuilt only when an episode changes", "supersedes": "e5"},
+    {"id": "e11", "day": 95, "type": "task", "topic": "chapters", "content": "Support podcast chapter markers"}
+  ],
+  "questions": [
+    {"q": "Where are audio files stored?", "answer": "e7"},
+    {"q": "Which CDN serves episodes?", "answer": "e8"},
+    {"q": "How are uploaded episodes transcoded?", "answer": "e6"},
+    {"q": "How do we count downloads?", "answer": "e9"},
+    {"q": "How are RSS feeds generated?", "answer": "e10"}
+  ]
+}

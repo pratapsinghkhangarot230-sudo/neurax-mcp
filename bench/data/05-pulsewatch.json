@@ -1,0 +1,25 @@
+{
+  "slug": "pulsewatch",
+  "name": "Pulsewatch uptime monitoring",
+  "split": "calibration",
+  "events": [
+    {"id": "e1", "day": 0, "type": "decision", "topic": "language", "content": "Write the probe workers in Python"},
+    {"id": "e2", "day": 3, "type": "decision", "topic": "metrics-storage", "content": "Store check results in InfluxDB"},
+    {"id": "e3", "day": 6, "type": "decision", "topic": "alerts", "content": "Send alerts by email only"},
+    {"id": "e4", "day": 10, "type": "decision", "topic": "api", "content": "The public API is REST with JSON"},
+    {"id": "e5", "day": 14, "type": "constraint", "topic": "probes", "content": "Probes in at least three regions must fail before a site is marked down"},
+    {"id": "e6", "day": 35, "type": "decision", "topic": "probes/runtime", "content": "Rewrite the probe workers in Go for lower memory per concurrent check", "rationale": "Python workers needed 10x the RAM", "supersedes": "e1"},
+    {"id": "e7", "day": 50, "type": "decision", "topic": "alerts", "content": "Send alerts by email, Slack and PagerDuty", "supersedes": "e3"},
+    {"id": "e8", "day": 70, "type": "decision", "topic": "timeseries", "content": "Move check results from InfluxDB to TimescaleDB", "rationale": "Need SQL joins with customer data", "supersedes": "e2"},
+    {"id": "e9", "day": 95, "type": "decision", "topic": "alerts", "content": "Drop email alerts; alert only through Slack, PagerDuty and webhooks", "rationale": "Email alerts were ignored and hurt deliverability", "supersedes": "e7"},
+    {"id": "e10", "day": 105, "type": "task", "topic": "status-pages", "content": "Build public status pages for customers"},
+    {"id": "e11", "day": 120, "type": "fact", "topic": "hosting", "content": "Probe workers run on Fly.io machines in six regions"}
+  ],
+  "questions": [
+    {"q": "What language are the probes written in?", "answer": "e6"},
+    {"q": "Where are check results stored?", "answer": "e8"},
+    {"q": "Which channels do alerts go to?", "answer": "e9"},
+    {"q": "When is a site considered down?", "answer": "e5"},
+    {"q": "What style is the public API?", "answer": "e4"}
+  ]
+}

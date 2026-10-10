@@ -1,0 +1,25 @@
+{
+  "slug": "jobboard",
+  "name": "Jobboard hiring marketplace",
+  "split": "heldout",
+  "events": [
+    {"id": "e1", "day": 0, "type": "decision", "topic": "search", "content": "Job search uses Postgres LIKE queries"},
+    {"id": "e2", "day": 3, "type": "decision", "topic": "backend/framework", "content": "The backend is built with Laravel"},
+    {"id": "e3", "day": 6, "type": "decision", "topic": "payments", "content": "Employers pay per job post through PayPal"},
+    {"id": "e4", "day": 9, "type": "decision", "topic": "email", "content": "Job alert emails are sent with Mailchimp"},
+    {"id": "e5", "day": 12, "type": "constraint", "topic": "spam", "content": "Every new employer account is manually approved"},
+    {"id": "e6", "day": 30, "type": "decision", "topic": "search", "content": "Job search uses Postgres full-text search with trigram matching", "rationale": "LIKE queries were slow and missed word forms", "supersedes": "e1"},
+    {"id": "e7", "day": 55, "type": "decision", "topic": "monetization", "content": "Employers buy monthly subscriptions through Stripe instead of paying per post", "rationale": "Recurring revenue and fewer PayPal disputes", "supersedes": "e3"},
+    {"id": "e8", "day": 70, "type": "decision", "topic": "search", "content": "Move job search to Typesense for typo tolerance and faceting", "supersedes": "e6"},
+    {"id": "e9", "day": 85, "type": "decision", "topic": "email", "content": "Send job alert emails through Amazon SES instead of Mailchimp", "rationale": "Mailchimp pricing per contact got too expensive", "supersedes": "e4"},
+    {"id": "e10", "day": 95, "type": "constraint", "topic": "spam/moderation", "content": "Employer accounts are approved automatically unless a fraud score flags them", "rationale": "Manual review took two days and lost employers", "supersedes": "e5"},
+    {"id": "e11", "day": 105, "type": "task", "topic": "salary", "content": "Show salary ranges on job listings"}
+  ],
+  "questions": [
+    {"q": "What powers job search?", "answer": "e8"},
+    {"q": "How do employers pay?", "answer": "e7"},
+    {"q": "How are job alert emails sent?", "answer": "e9"},
+    {"q": "Are new employer accounts reviewed before they can post?", "answer": "e10"},
+    {"q": "What framework is the backend written in?", "answer": "e2"}
+  ]
+}

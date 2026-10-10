@@ -1,0 +1,25 @@
+{
+  "slug": "citybike",
+  "name": "Citybike bike sharing",
+  "split": "heldout",
+  "events": [
+    {"id": "e1", "day": 0, "type": "decision", "topic": "locks", "content": "Bike locks connect over Bluetooth to the rider's phone"},
+    {"id": "e2", "day": 3, "type": "decision", "topic": "payments", "content": "Riders pay per ride by card through Adyen"},
+    {"id": "e3", "day": 6, "type": "decision", "topic": "backend/language", "content": "The backend is written in Java with Spring Boot"},
+    {"id": "e4", "day": 9, "type": "decision", "topic": "database", "content": "Store rides in Oracle Database"},
+    {"id": "e5", "day": 12, "type": "constraint", "topic": "pricing", "content": "Rides under 30 minutes are free for subscribers"},
+    {"id": "e6", "day": 35, "type": "decision", "topic": "connectivity", "content": "Bike locks have their own LTE-M modems and are unlocked from the server", "rationale": "Bluetooth unlocks failed on many Android phones", "supersedes": "e1"},
+    {"id": "e7", "day": 50, "type": "decision", "topic": "database", "content": "Migrate rides from Oracle to Postgres to drop licensing costs", "supersedes": "e4"},
+    {"id": "e8", "day": 65, "type": "constraint", "topic": "pricing", "content": "Rides under 45 minutes are free for subscribers", "rationale": "City contract renewal", "supersedes": "e5"},
+    {"id": "e9", "day": 80, "type": "decision", "topic": "wallet", "content": "Riders top up an in-app wallet through Adyen and rides are deducted from the balance", "rationale": "Per-ride card fees exceeded the price of short rides", "supersedes": "e2"},
+    {"id": "e10", "day": 95, "type": "task", "topic": "rebalancing", "content": "Predict station demand to plan bike rebalancing"},
+    {"id": "e11", "day": 100, "type": "fact", "topic": "hosting", "content": "Runs on Google Cloud in europe-west3"}
+  ],
+  "questions": [
+    {"q": "How do bike locks unlock?", "answer": "e6"},
+    {"q": "Which database stores rides?", "answer": "e7"},
+    {"q": "How long can subscribers ride for free?", "answer": "e8"},
+    {"q": "How do riders pay?", "answer": "e9"},
+    {"q": "What language is the backend written in?", "answer": "e3"}
+  ]
+}

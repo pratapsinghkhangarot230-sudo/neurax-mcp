@@ -1,0 +1,24 @@
+{
+  "slug": "kitchenpos",
+  "name": "KitchenPOS restaurant point of sale",
+  "split": "heldout",
+  "events": [
+    {"id": "e1", "day": 0, "type": "decision", "topic": "platform", "content": "The POS is an iPad app written in Swift"},
+    {"id": "e2", "day": 3, "type": "decision", "topic": "database", "content": "Store orders in a central Firebase Firestore database"},
+    {"id": "e3", "day": 6, "type": "constraint", "topic": "offline", "content": "Taking orders must keep working when the restaurant's internet is down"},
+    {"id": "e4", "day": 9, "type": "decision", "topic": "payments", "content": "Take card payments with Square terminals"},
+    {"id": "e5", "day": 12, "type": "decision", "topic": "printing", "content": "Print kitchen tickets on Epson thermal printers over the local network"},
+    {"id": "e6", "day": 35, "type": "decision", "topic": "local-storage", "content": "Store orders on the device in SQLite and sync them to Postgres in the cloud", "rationale": "Firestore offline mode lost orders during long outages", "supersedes": "e2"},
+    {"id": "e7", "day": 55, "type": "decision", "topic": "payments", "content": "Switch card payments from Square to Stripe Terminal", "rationale": "Lower fees and better API", "supersedes": "e4"},
+    {"id": "e8", "day": 75, "type": "decision", "topic": "client", "content": "Rewrite the POS as a cross-platform React Native app to support Android tablets", "rationale": "Restaurants want cheaper Android tablets", "supersedes": "e1"},
+    {"id": "e9", "day": 90, "type": "task", "topic": "loyalty", "content": "Add a loyalty points program"},
+    {"id": "e10", "day": 105, "type": "fact", "topic": "hosting", "content": "The cloud sync API runs on Render"}
+  ],
+  "questions": [
+    {"q": "Where are orders stored?", "answer": "e6"},
+    {"q": "Which payment terminals do we use?", "answer": "e7"},
+    {"q": "What technology is the POS app built with?", "answer": "e8"},
+    {"q": "Does taking orders need internet access?", "answer": "e3"},
+    {"q": "How are kitchen tickets printed?", "answer": "e5"}
+  ]
+}

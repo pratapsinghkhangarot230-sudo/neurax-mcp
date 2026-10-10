@@ -1,0 +1,24 @@
+{
+  "slug": "adpixel",
+  "name": "Adpixel ad analytics",
+  "split": "heldout",
+  "events": [
+    {"id": "e1", "day": 0, "type": "decision", "topic": "events", "content": "Collect ad events with a JavaScript pixel that posts to our API"},
+    {"id": "e2", "day": 3, "type": "decision", "topic": "warehouse", "content": "Store raw ad events in BigQuery"},
+    {"id": "e3", "day": 6, "type": "decision", "topic": "dashboards", "content": "Build customer dashboards in Metabase"},
+    {"id": "e4", "day": 9, "type": "constraint", "topic": "consent", "content": "Only track users who gave consent under the IAB TCF framework"},
+    {"id": "e5", "day": 12, "type": "decision", "topic": "pipeline", "content": "Run nightly batch aggregation with Airflow"},
+    {"id": "e6", "day": 40, "type": "decision", "topic": "pipeline", "content": "Replace nightly Airflow batches with streaming aggregation in Kafka and Flink", "rationale": "Customers want same-hour numbers", "supersedes": "e5"},
+    {"id": "e7", "day": 55, "type": "decision", "topic": "analytics-store", "content": "Move raw ad events from BigQuery to ClickHouse", "rationale": "BigQuery scan costs grew faster than revenue", "supersedes": "e2"},
+    {"id": "e8", "day": 70, "type": "decision", "topic": "reporting-ui", "content": "Replace Metabase with custom dashboards built in React and ECharts", "rationale": "Metabase embedding could not be white-labelled", "supersedes": "e3"},
+    {"id": "e9", "day": 85, "type": "decision", "topic": "events", "content": "Collect ad events server-side through a first-party endpoint instead of a third-party pixel", "rationale": "Ad blockers and browser privacy rules dropped pixel events", "supersedes": "e1"},
+    {"id": "e10", "day": 100, "type": "task", "topic": "attribution", "content": "Add multi-touch attribution reports"}
+  ],
+  "questions": [
+    {"q": "Where are raw ad events stored?", "answer": "e7"},
+    {"q": "How are events aggregated?", "answer": "e6"},
+    {"q": "What do customers use to view their reports?", "answer": "e8"},
+    {"q": "How do we collect ad events?", "answer": "e9"},
+    {"q": "Which users are we allowed to track?", "answer": "e4"}
+  ]
+}

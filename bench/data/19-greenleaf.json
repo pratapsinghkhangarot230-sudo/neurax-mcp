@@ -1,0 +1,24 @@
+{
+  "slug": "greenleaf",
+  "name": "Greenleaf plant care app",
+  "split": "heldout",
+  "events": [
+    {"id": "e1", "day": 0, "type": "decision", "topic": "ml/inference", "content": "Identify plants with the Plant.id cloud API"},
+    {"id": "e2", "day": 3, "type": "decision", "topic": "backend", "content": "The backend runs on Firebase Cloud Functions"},
+    {"id": "e3", "day": 6, "type": "decision", "topic": "images", "content": "Store user plant photos in Firebase Storage"},
+    {"id": "e4", "day": 9, "type": "constraint", "topic": "privacy", "content": "Photos are deleted after 30 days unless the user saves them"},
+    {"id": "e5", "day": 12, "type": "decision", "topic": "reminders", "content": "Watering reminders are local notifications scheduled on the phone"},
+    {"id": "e6", "day": 40, "type": "decision", "topic": "plant-id", "content": "Identify plants on-device with a TensorFlow Lite model we trained", "rationale": "Plant.id cost per request and offline use in gardens", "supersedes": "e1"},
+    {"id": "e7", "day": 60, "type": "decision", "topic": "backend", "content": "Move the backend from Firebase Cloud Functions to a FastAPI service on Cloud Run", "rationale": "Cold starts and function sprawl", "supersedes": "e2"},
+    {"id": "e8", "day": 75, "type": "decision", "topic": "reminders", "content": "Watering reminders are push notifications from the server, adjusted for local weather", "rationale": "Users overwatered after rainy days", "supersedes": "e5"},
+    {"id": "e9", "day": 90, "type": "task", "topic": "disease", "content": "Detect leaf diseases from photos"},
+    {"id": "e10", "day": 100, "type": "decision", "topic": "photo-storage", "content": "Store plant photos in Google Cloud Storage with a 30-day lifecycle rule", "rationale": "Follows the move off Firebase", "supersedes": "e3"}
+  ],
+  "questions": [
+    {"q": "How are plants identified from photos?", "answer": "e6"},
+    {"q": "What does the backend run on?", "answer": "e7"},
+    {"q": "How are watering reminders delivered?", "answer": "e8"},
+    {"q": "Where are plant photos stored?", "answer": "e10"},
+    {"q": "How long are photos kept?", "answer": "e4"}
+  ]
+}

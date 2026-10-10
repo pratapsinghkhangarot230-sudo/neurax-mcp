@@ -1,0 +1,24 @@
+{
+  "slug": "homeiot",
+  "name": "HomeIoT smart home hub",
+  "split": "heldout",
+  "events": [
+    {"id": "e1", "day": 0, "type": "decision", "topic": "protocol", "content": "Devices talk to the hub over Zigbee"},
+    {"id": "e2", "day": 3, "type": "decision", "topic": "hub/os", "content": "The hub runs Raspberry Pi OS"},
+    {"id": "e3", "day": 6, "type": "decision", "topic": "cloud", "content": "Remote access goes through our AWS IoT Core backend"},
+    {"id": "e4", "day": 9, "type": "constraint", "topic": "local-first", "content": "Automations must run locally on the hub without internet"},
+    {"id": "e5", "day": 12, "type": "decision", "topic": "app", "content": "The mobile app is built with Ionic"},
+    {"id": "e6", "day": 35, "type": "decision", "topic": "protocol", "content": "Use Matter over Thread as the primary device protocol, keeping Zigbee only for legacy devices", "rationale": "Matter is where new devices are going", "supersedes": "e1"},
+    {"id": "e7", "day": 50, "type": "decision", "topic": "firmware", "content": "The hub runs a custom Yocto Linux image with A/B updates", "rationale": "SD card corruption bricked hubs during updates", "supersedes": "e2"},
+    {"id": "e8", "day": 65, "type": "decision", "topic": "remote-access", "content": "Remote access uses a WireGuard tunnel to the hub instead of AWS IoT Core", "rationale": "IoT Core cost per device and vendor lock-in", "supersedes": "e3"},
+    {"id": "e9", "day": 80, "type": "decision", "topic": "app", "content": "Rebuild the mobile app natively in Swift and Kotlin", "rationale": "Ionic could not do background Bluetooth pairing", "supersedes": "e5"},
+    {"id": "e10", "day": 95, "type": "task", "topic": "energy", "content": "Show energy usage per device"}
+  ],
+  "questions": [
+    {"q": "What protocol do devices use to talk to the hub?", "answer": "e6"},
+    {"q": "What operating system does the hub run?", "answer": "e7"},
+    {"q": "How do users reach their hub from outside the home?", "answer": "e8"},
+    {"q": "How is the mobile app built?", "answer": "e9"},
+    {"q": "Do automations need an internet connection?", "answer": "e4"}
+  ]
+}

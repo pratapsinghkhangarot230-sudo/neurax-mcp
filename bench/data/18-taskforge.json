@@ -1,0 +1,24 @@
+{
+  "slug": "taskforge",
+  "name": "Taskforge project management",
+  "split": "heldout",
+  "events": [
+    {"id": "e1", "day": 0, "type": "decision", "topic": "api", "content": "The public API is REST"},
+    {"id": "e2", "day": 3, "type": "decision", "topic": "frontend", "content": "The frontend uses Redux for state management"},
+    {"id": "e3", "day": 6, "type": "decision", "topic": "database", "content": "Use Postgres for all application data"},
+    {"id": "e4", "day": 9, "type": "decision", "topic": "realtime", "content": "Clients poll the server every 30 seconds for updates"},
+    {"id": "e5", "day": 12, "type": "constraint", "topic": "sla", "content": "API p95 latency must stay under 300 ms"},
+    {"id": "e6", "day": 35, "type": "decision", "topic": "api", "content": "Move the public API from REST to GraphQL", "rationale": "Board views needed many round trips", "supersedes": "e1"},
+    {"id": "e7", "day": 50, "type": "decision", "topic": "state-management", "content": "Replace Redux with TanStack Query for server state and Zustand for UI state", "rationale": "Most Redux code was hand-written caching", "supersedes": "e2"},
+    {"id": "e8", "day": 65, "type": "decision", "topic": "live-updates", "content": "Push updates to clients over Server-Sent Events instead of polling", "rationale": "Polling load and stale boards", "supersedes": "e4"},
+    {"id": "e9", "day": 80, "type": "decision", "topic": "api", "content": "Keep GraphQL for our own app but restore a REST API for public integrations", "rationale": "Integration partners asked for REST and webhooks", "supersedes": "e6"},
+    {"id": "e10", "day": 95, "type": "task", "topic": "gantt", "content": "Add a Gantt chart view"}
+  ],
+  "questions": [
+    {"q": "What style is the public API?", "answer": "e9"},
+    {"q": "How is frontend state managed?", "answer": "e7"},
+    {"q": "How do clients get live updates?", "answer": "e8"},
+    {"q": "Which database do we use?", "answer": "e3"},
+    {"q": "What latency target does the API have?", "answer": "e5"}
+  ]
+}

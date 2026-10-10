@@ -62,7 +62,7 @@ Response: `{"project": {"slug", "name", "description"}, "memories": [{...}]}`
 Saves one memory. **Agents call this at the end of a session, once per decision, constraint, fact or task.**
 - If `supersedes_id` is given, save and supersede happen in one transaction.
 - If identical active content already exists in the project, return the existing memory with `"duplicate": true` instead of erroring. If `supersedes_id` was also given, nothing is superseded and the response carries a `note` saying so.
-- **Contradiction check:** the response includes `possible_conflicts`, up to 5 *other* active memories in the same project that share the topic **or** have cosine similarity ≥ `NEURAX_CONFLICT_THRESHOLD` (default 0.80). The tool result tells the agent: *"If the new memory replaces any of these, call supersede(old_id, new_id)."* Neurax does not decide; the calling model does.
+- **Contradiction check:** the response includes `possible_conflicts`, up to 5 *other* active memories in the same project that share the topic **or** have cosine similarity ≥ `NEURAX_CONFLICT_THRESHOLD` (default 0.68, provisional: calibrated on 4 cross-topic conflicts, recalibrate in Phase 4). The tool result tells the agent: *"If the new memory replaces any of these, call supersede(old_id, new_id)."* Neurax does not decide; the calling model does.
 
 Response: `{"memory": {...}, "duplicate": false, "possible_conflicts": [{...}]}`, plus `"hint"` when `possible_conflicts` is non-empty.
 
@@ -143,7 +143,7 @@ Users add a short instruction block to their own project's `CLAUDE.md` / `.curso
 | `NEURAX_USER_EMAIL` | (required) | Local-mode user identity, created on first run |
 | `NEURAX_EMBED_MODEL` | `BAAI/bge-small-en-v1.5` | Must output 384 dims to match the schema |
 | `NEURAX_MODEL_CACHE` | `%LOCALAPPDATA%\neurax\models` (Windows), `~/.cache/neurax/models` (elsewhere) | Where fastembed downloads the model. A fixed path, so a cleaned temp dir never forces a re-download at server start |
-| `NEURAX_CONFLICT_THRESHOLD` | `0.80` | Cosine similarity for `possible_conflicts` |
+| `NEURAX_CONFLICT_THRESHOLD` | `0.68` | Cosine similarity for `possible_conflicts` |
 | `NEURAX_W_VEC` / `_W_TEXT` / `_W_RECENT` / `_W_PIN` | `0.55 / 0.25 / 0.10 / 0.10` | Ranking weights |
 | `NEURAX_HALF_LIFE_DAYS` | `30` | Recency decay |
 | `NEURAX_LOG_LEVEL` | `INFO` | Logs go to stderr |

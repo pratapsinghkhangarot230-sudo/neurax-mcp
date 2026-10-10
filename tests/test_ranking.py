@@ -69,7 +69,7 @@ def test_weights_come_from_config(
 
 # Real cross-topic conflicts: same question, different topic names. Measured with
 # bge-small-en-v1.5 (topic-prefixed text): 0.706-0.760. Related but not conflicting
-# memories scored 0.51-0.69, so 0.80 misses every one of these.
+# memories scored 0.51-0.69. 0.80 missed every one of these; the default is now 0.68.
 CROSS_TOPIC_CONFLICTS = [
     (("database", "Storage is Postgres 16 with pgvector"), ("storage", "Use MongoDB for storage")),
     (("performance", "Use Redis as the cache layer"), ("cache", "Use Memcached for caching")),
@@ -81,9 +81,6 @@ CROSS_TOPIC_CONFLICTS = [
 ]
 
 
-@pytest.mark.xfail(
-    strict=True, reason="NEURAX_CONFLICT_THRESHOLD=0.80 is above these similarities; pending"
-)
 @pytest.mark.parametrize(("old", "new"), CROSS_TOPIC_CONFLICTS)
 def test_cross_topic_conflict_is_flagged(
     user_id: UUID, project: str, old: tuple[str, str], new: tuple[str, str]

@@ -20,7 +20,7 @@ LOG_LEVEL: str = os.environ.get("NEURAX_LOG_LEVEL", "INFO")
 USER_EMAIL: str | None = os.environ.get("NEURAX_USER_EMAIL")
 EMBED_MODEL: str = os.environ.get("NEURAX_EMBED_MODEL", "BAAI/bge-small-en-v1.5")
 MODEL_CACHE: str = os.environ.get("NEURAX_MODEL_CACHE") or _default_model_cache()
-CONFLICT_THRESHOLD: float = float(os.environ.get("NEURAX_CONFLICT_THRESHOLD", "0.80"))
+CONFLICT_THRESHOLD: float = float(os.environ.get("NEURAX_CONFLICT_THRESHOLD", "0.68"))
 
 # Ranking weights and recency half-life (ARCHITECTURE section 4).
 W_VEC: float = float(os.environ.get("NEURAX_W_VEC", "0.55"))

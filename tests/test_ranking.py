@@ -68,16 +68,28 @@ def test_weights_come_from_config(
 # --------------------------------------------------------------------------- conflict threshold
 
 # Real cross-topic conflicts: same question, different topic names. Measured with
-# bge-small-en-v1.5 (topic-prefixed text): 0.706-0.760. Related but not conflicting
-# memories scored 0.51-0.69. 0.80 missed every one of these; the default is now 0.68.
+# bge-small-en-v1.5 (topic-prefixed text): 0.706-0.760. The default threshold is 0.74, the
+# best F2 in the Phase 4 benchmark (bench/RESULTS.md): it trades ~3% cross-topic recall for
+# twice the precision, so the two pairs below 0.74 are kept as expected misses.
+EXPECTED_MISS = pytest.mark.xfail(
+    strict=True, reason="similarity below 0.74; accepted miss, see bench/RESULTS.md"
+)
 CROSS_TOPIC_CONFLICTS = [
-    (("database", "Storage is Postgres 16 with pgvector"), ("storage", "Use MongoDB for storage")),
+    pytest.param(
+        ("database", "Storage is Postgres 16 with pgvector"),
+        ("storage", "Use MongoDB for storage"),
+        marks=EXPECTED_MISS,
+    ),
     (("performance", "Use Redis as the cache layer"), ("cache", "Use Memcached for caching")),
     (
         ("sessions", "Keep user sessions in Redis"),
         ("auth/session-store", "Store sessions in Postgres"),
     ),
-    (("ui", "The UI is built with React"), ("frontend", "Use Vue for the web UI")),
+    pytest.param(
+        ("ui", "The UI is built with React"),
+        ("frontend", "Use Vue for the web UI"),
+        marks=EXPECTED_MISS,
+    ),
 ]
 
 

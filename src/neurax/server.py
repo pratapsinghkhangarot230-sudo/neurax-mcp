@@ -170,7 +170,7 @@ def search_context(
 
     Call this during a session when a past decision, constraint or fact matters for
     what you're doing ("what did we decide about auth?"). Returns current memories only;
-    set include_history=true to also see replaced ones (current ones rank first).
+    set include_history=true to also see replaced ones (current ones rank higher).
     types filters by kind, e.g. ["decision", "constraint"].
     """
     return _json(memory.search(_user(), project, query, limit, include_history, types))

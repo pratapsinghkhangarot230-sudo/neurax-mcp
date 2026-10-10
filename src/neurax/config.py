@@ -21,3 +21,13 @@ USER_EMAIL: str | None = os.environ.get("NEURAX_USER_EMAIL")
 EMBED_MODEL: str = os.environ.get("NEURAX_EMBED_MODEL", "BAAI/bge-small-en-v1.5")
 MODEL_CACHE: str = os.environ.get("NEURAX_MODEL_CACHE") or _default_model_cache()
 CONFLICT_THRESHOLD: float = float(os.environ.get("NEURAX_CONFLICT_THRESHOLD", "0.80"))
+
+# Ranking weights and recency half-life (ARCHITECTURE section 4).
+W_VEC: float = float(os.environ.get("NEURAX_W_VEC", "0.55"))
+W_TEXT: float = float(os.environ.get("NEURAX_W_TEXT", "0.25"))
+W_RECENT: float = float(os.environ.get("NEURAX_W_RECENT", "0.10"))
+W_PIN: float = float(os.environ.get("NEURAX_W_PIN", "0.10"))
+HALF_LIFE_DAYS: float = float(os.environ.get("NEURAX_HALF_LIFE_DAYS", "30"))
+if HALF_LIFE_DAYS <= 0:
+    # Fail at startup, not as a divide-by-zero inside the search SQL.
+    raise ValueError("NEURAX_HALF_LIFE_DAYS must be > 0")

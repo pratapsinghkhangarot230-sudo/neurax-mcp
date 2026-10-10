@@ -125,7 +125,7 @@ SELECT m.*,
  LIMIT %(limit)s;
 ```
 
-With `include_history=true`, drop the `status` filter and add a small penalty for superseded rows so current decisions still rank first.
+With `include_history=true`, drop the `status` filter and subtract `SUPERSEDED_PENALTY = 0.15` (a constant in `ranking.py`) from superseded rows, so current decisions rank above their predecessors. It is a penalty, not a sort: an old memory that matches much better can still outrank a weakly matching current one.
 
 ## 5. Session flow (what the README will tell users)
 

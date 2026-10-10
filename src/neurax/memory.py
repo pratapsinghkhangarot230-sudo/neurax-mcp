@@ -13,7 +13,7 @@ from uuid import UUID
 
 from psycopg import errors
 
-from neurax import config, embeddings
+from neurax import config, embeddings, ranking
 from neurax.db import Conn, transaction
 
 log = logging.getLogger(__name__)
@@ -320,10 +320,8 @@ def search(
     include_history: bool = False,
     types: Sequence[str] | None = None,
 ) -> list[dict[str, Any]]:
-    """Simple hybrid search: vector + keyword candidates, scored by similarity + text rank.
-
-    Phase 3 replaces the score with the weighted formula in ranking.py.
-    """
+    """Hybrid search (ranking.py). Active only unless include_history; then current
+    memories rank above superseded ones via a small penalty."""
     if not 1 <= limit <= 50:
         raise InvalidInput("limit must be between 1 and 50")
     if types is not None and (bad := set(types) - set(TYPES)):
@@ -332,52 +330,9 @@ def search(
 
     with transaction() as conn:
         project_id = _project_id(conn, user_id, project)
-        # Filtered HNSW scans can stop short; iterative scan keeps going until enough match.
-        conn.execute("SET LOCAL hnsw.iterative_scan = relaxed_order")
-        # Candidates: top 50 by cosine distance UNION top 50 keyword matches, then score.
-        # Active memories rank above superseded ones when history is included.
-        rows = conn.execute(
-            """WITH q AS (
-                   SELECT %(emb)s::vector AS emb,
-                          websearch_to_tsquery('english', %(query)s) AS tsq
-               ),
-               vec AS (
-                   SELECT m.id FROM memories m, q
-                    WHERE m.user_id = %(user_id)s AND m.project_id = %(project_id)s
-                      AND (%(include_history)s OR m.status = 'active')
-                      AND (%(types)s::text[] IS NULL OR m.type = ANY(%(types)s::text[]))
-                      AND m.embedding IS NOT NULL AND q.emb IS NOT NULL
-                    ORDER BY m.embedding <=> q.emb
-                    LIMIT 50
-               ),
-               txt AS (
-                   SELECT m.id FROM memories m, q
-                    WHERE m.user_id = %(user_id)s AND m.project_id = %(project_id)s
-                      AND (%(include_history)s OR m.status = 'active')
-                      AND (%(types)s::text[] IS NULL OR m.type = ANY(%(types)s::text[]))
-                      AND m.search_tsv @@ q.tsq
-                    ORDER BY ts_rank_cd(m.search_tsv, q.tsq, 32) DESC
-                    LIMIT 50
-               )
-               SELECT m.id, m.type, m.topic, m.content, m.rationale, m.status, m.pinned,
-                      m.source_tool, m.created_at, m.supersedes_id,
-                      coalesce(1 - (m.embedding <=> q.emb), 0)
-                        + ts_rank_cd(m.search_tsv, q.tsq, 32) AS score
-                 FROM memories m, q
-                WHERE m.user_id = %(user_id)s
-                  AND m.id IN (SELECT id FROM vec UNION SELECT id FROM txt)
-                ORDER BY m.status = 'active' DESC, score DESC
-                LIMIT %(limit)s""",
-            {
-                "user_id": user_id,
-                "project_id": project_id,
-                "emb": vector,
-                "query": query,
-                "include_history": include_history,
-                "types": list(types) if types is not None else None,  # text[] needs a list
-                "limit": limit,
-            },
-        ).fetchall()
+        rows = ranking.search(
+            conn, user_id, project_id, vector, query, limit, include_history, types
+        )
     return [_out(r) for r in rows]
 
 

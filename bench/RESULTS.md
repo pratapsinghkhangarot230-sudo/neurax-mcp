@@ -24,10 +24,11 @@ calls, so the numbers are deterministic for a given embedding model and dataset.
 - **Neurax**: every change the dataset declares is applied with `supersede`; search returns
   current memories only.
 - **Neurax (conflict-gated)**: a change is applied only if the old memory appears in the new
-  one's `possible_conflicts` at the current threshold (0.68). This is what an agent that
+  one's `possible_conflicts` at the current threshold (0.74). This is what an agent that
   only replaces what it is shown would do.
 - **Flat**: every event saved as active, never superseded, same hybrid search.
-- **Flat + recency**: Flat's top 5 results, re-sorted newest first.
+- **Flat + recency**: Flat's results, with those scoring within 0.1 of the best
+  match re-sorted newest first.
 
 ### Metrics
 
@@ -42,21 +43,21 @@ calls, so the numbers are deterministic for a given embedding model and dataset.
 | System | Top-1 (n=50) | Stale in top 3 (n=38 changed) | Top-1 unchanged (n=12) | Top-1 same topic (n=18) | Top-1 new topic (n=20) |
 |---|---|---|---|---|---|
 | Neurax | 76% | 0% | 83% | 83% | 65% |
-| Neurax (conflict-gated) | 76% | 0% | 83% | 83% | 65% |
+| Neurax (conflict-gated) | 76% | 3% | 83% | 83% | 65% |
 | Flat | 54% | 82% | 83% | 50% | 40% |
-| Flat + recency | 4% | 3% | 0% | 6% | 5% |
+| Flat + recency | 32% | 55% | 25% | 50% | 20% |
 
 ## Results: all 20 projects (reference)
 
 | System | Top-1 (n=100) | Stale in top 3 (n=72 changed) | Top-1 unchanged (n=28) | Top-1 same topic (n=36) | Top-1 new topic (n=36) |
 |---|---|---|---|---|---|
 | Neurax | 75% | 0% | 71% | 86% | 67% |
-| Neurax (conflict-gated) | 75% | 0% | 71% | 86% | 67% |
+| Neurax (conflict-gated) | 74% | 4% | 71% | 86% | 64% |
 | Flat | 53% | 86% | 71% | 61% | 31% |
-| Flat + recency | 5% | 3% | 4% | 8% | 3% |
+| Flat + recency | 29% | 50% | 29% | 39% | 19% |
 
-Supersede links the conflict-gated run missed at 0.68 (old memory not in
-`possible_conflicts`): 0.
+Supersede links the conflict-gated run missed at 0.74 (old memory not in
+`possible_conflicts`): 3: shopfront e5 -> e8; brewbook e1 -> e6; jobboard e3 -> e7.
 
 ## Conflict threshold (calibration projects)
 
@@ -80,15 +81,19 @@ changes cross-topic results; the cross-topic columns isolate that.
 | 0.80 | 0.97 | 0.79 | 0.82 | 1.00 | 0.53 |
 
 **Recommended threshold: 0.74** (highest F2 on calibration; F2 weights recall twice as
-much as precision). Current default: 0.68. Not changed; needs Pratap's approval.
+much as precision). Current default: 0.74.
 
-Held-out check of both values:
+Held-out check:
 
 | Threshold | Precision | Recall | F2 | Cross-topic precision | Cross-topic recall |
 |---|---|---|---|---|---|
-| 0.68 | 0.44 | 1.00 | 0.80 | 0.28 | 1.00 |
 | 0.74 | 0.85 | 0.97 | 0.95 | 0.73 | 0.95 |
 
-## Data fixes after the dataset commit
+## Changes after the first run
 
-None.
+Data fixes after the dataset commit: none.
+
+Method changes:
+
+- Default conflict threshold raised from 0.68 to 0.74 (commit 8d6d0e8), as recommended by the first run's calibration sweep. The conflict-gated row now uses 0.74.
+- Flat + recency changed from 'top 5 re-sorted newest first' to 're-sort newest first only results within 0.1 of the best score'. The first version scored 4% top-1 on held-out: with about 10 memories per project, the top 5 always held unrelated memories, so the newest task or fact usually came first. That made it a strawman, not a baseline. The margin was fixed before the rerun and not tuned.

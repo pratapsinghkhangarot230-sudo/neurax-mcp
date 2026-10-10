@@ -29,11 +29,24 @@ from neurax.db import get_pool, transaction  # noqa: E402
 
 RESULTS_PATH = Path(__file__).parent / "RESULTS.md"
 SYSTEMS = ("Neurax", "Neurax (conflict-gated)", "Flat", "Flat + recency")
-TOP_K = 5  # results fetched per question; flat + recency re-sorts these by date
+TOP_K = 5  # results fetched per question
+# Flat + recency re-sorts newest first only the results scoring within this margin of the
+# best match. Set to W_RECENT's default (the most recency can add) before the rerun, not tuned.
+RECENCY_MARGIN = 0.10
 THRESHOLDS = [round(0.60 + 0.02 * i, 2) for i in range(11)]
 CATEGORIES = ("unchanged", "same topic", "new topic")
 # Genuine data bugs fixed after the dataset commit (63b75f0), as "commit: what".
 DATA_FIXES: list[str] = []
+# Method changes after the first run (706feb0), approved by Pratap.
+METHOD_CHANGES = [
+    "Default conflict threshold raised from 0.68 to 0.74 (commit 8d6d0e8), as recommended "
+    "by the first run's calibration sweep. The conflict-gated row now uses 0.74.",
+    "Flat + recency changed from 'top 5 re-sorted newest first' to 're-sort newest first "
+    f"only results within {RECENCY_MARGIN} of the best score'. The first version scored 4% "
+    "top-1 on held-out: with about 10 memories per project, the top 5 always held unrelated "
+    "memories, so the newest task or fact usually came first. That made it a strawman, not "
+    "a baseline. The margin was fixed before the rerun and not tuned.",
+]
 
 Candidates = list[dict[str, Any]]  # one save: every other current memory, see candidates()
 
@@ -120,8 +133,11 @@ def build(
 
 def ranked(user_id: UUID, slug: str, query: str, by_recency: bool) -> list[str]:
     results = memory.search(user_id, slug, query, limit=TOP_K)
-    if by_recency:
-        results.sort(key=lambda m: datetime.fromisoformat(m["created_at"]), reverse=True)
+    if by_recency and results:
+        # Results come best first, so the close matches are a prefix; the rest keep their order.
+        close = [m for m in results if m["score"] >= results[0]["score"] - RECENCY_MARGIN]
+        close.sort(key=lambda m: datetime.fromisoformat(m["created_at"]), reverse=True)
+        results = close + results[len(close) :]
     return [m["id"] for m in results]
 
 
@@ -269,7 +285,8 @@ calls, so the numbers are deterministic for a given embedding model and dataset.
   one's `possible_conflicts` at the current threshold ({current:.2f}). This is what an agent that
   only replaces what it is shown would do.
 - **Flat**: every event saved as active, never superseded, same hybrid search.
-- **Flat + recency**: Flat's top {TOP_K} results, re-sorted newest first.
+- **Flat + recency**: Flat's results, with those scoring within {RECENCY_MARGIN} of the best
+  match re-sorted newest first.
 
 ### Metrics
 
@@ -300,18 +317,23 @@ changes cross-topic results; the cross-topic columns isolate that.
 {sweep_table(saves["calibration"])}
 
 **Recommended threshold: {best:.2f}** (highest F2 on calibration; F2 weights recall twice as
-much as precision). Current default: {current:.2f}. Not changed; needs Pratap's approval.
+much as precision). Current default: {current:.2f}.{
+        "" if best == current else " Not changed; needs Pratap's approval."
+    }
 
-Held-out check of both values:
+Held-out check:
 
 | Threshold | Precision | Recall | F2 | Cross-topic precision | Cross-topic recall |
 |---|---|---|---|---|---|
-{heldout_check(current)}
-{heldout_check(best)}
+{chr(10).join(heldout_check(t) for t in sorted({current, best}))}
 
-## Data fixes after the dataset commit
+## Changes after the first run
 
-{chr(10).join(f"- {f}" for f in DATA_FIXES) or "None."}
+Data fixes after the dataset commit: {"; ".join(DATA_FIXES) or "none"}.
+
+Method changes:
+
+{chr(10).join(f"- {c}" for c in METHOD_CHANGES)}
 """
     RESULTS_PATH.write_text(report, encoding="utf-8")
     print(report)

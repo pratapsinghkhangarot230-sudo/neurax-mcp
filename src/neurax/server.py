@@ -1,6 +1,6 @@
 """Neurax MCP server over stdio: a thin layer over memory.py.
 
-Run with: uv run python -m neurax.server  (needs NEURAX_USER_EMAIL)
+Run with: uv run neurax-server  (needs NEURAX_USER_EMAIL)
 
 Never write to stdout here: the stdio transport uses it for protocol messages.
 Tool docstrings are the descriptions agents read; keep them in sync with

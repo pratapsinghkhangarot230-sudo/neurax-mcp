@@ -20,9 +20,6 @@ from pathlib import Path  # noqa: E402
 from typing import Any  # noqa: E402
 from uuid import UUID  # noqa: E402
 
-import psycopg  # noqa: E402
-from psycopg import sql  # noqa: E402
-
 from bench import dataset  # noqa: E402
 from neurax import config, memory, migrate  # noqa: E402
 from neurax.db import get_pool, transaction  # noqa: E402
@@ -52,16 +49,6 @@ Candidates = list[dict[str, Any]]  # one save: every other current memory, see c
 
 
 # --------------------------------------------------------------------------- setup
-
-
-def create_database() -> None:
-    dbname = str(psycopg.conninfo.conninfo_to_dict(BENCH_DATABASE_URL)["dbname"])
-    admin_url = psycopg.conninfo.make_conninfo(BENCH_DATABASE_URL, dbname="postgres")
-    with psycopg.connect(admin_url, autocommit=True) as conn:
-        # Create the bench database once; runs are isolated by user, never dropped.
-        if conn.execute("SELECT 1 FROM pg_database WHERE datname = %s", (dbname,)).fetchone():
-            return
-        conn.execute(sql.SQL("CREATE DATABASE {}").format(sql.Identifier(dbname)))
 
 
 def backdate(user_id: UUID, memory_id: str, age_days: int) -> None:
@@ -211,7 +198,7 @@ def sweep_table(saves: list[Candidates]) -> str:
 
 
 def main() -> None:
-    create_database()
+    migrate.create_database()  # runs are isolated by user, never dropped
     migrate.migrate()
     projects = dataset.load()
     user_id = memory.ensure_user(f"bench-{uuid.uuid4().hex}@example.com")

@@ -1,12 +1,13 @@
 """Apply db/migrations/*.sql in order, skipping versions already in schema_migrations.
 
-Run with: uv run python -m neurax.migrate
+Run with: uv run neurax-migrate
 """
 
 import sys
 from pathlib import Path
 
 import psycopg
+from psycopg import sql
 
 from neurax import config
 
@@ -19,6 +20,17 @@ def applied_versions(conn: psycopg.Connection) -> set[str]:
         return set()
     # Every version that has already run.
     return {row[0] for row in conn.execute("SELECT version FROM schema_migrations")}
+
+
+def create_database() -> None:
+    """Create the database DATABASE_URL points at, if missing (never drops anything)."""
+    dbname = str(psycopg.conninfo.conninfo_to_dict(config.DATABASE_URL)["dbname"])
+    admin_url = psycopg.conninfo.make_conninfo(config.DATABASE_URL, dbname="postgres")
+    with psycopg.connect(admin_url, autocommit=True) as conn:
+        # Does the database already exist?
+        if conn.execute("SELECT 1 FROM pg_database WHERE datname = %s", (dbname,)).fetchone():
+            return
+        conn.execute(sql.SQL("CREATE DATABASE {}").format(sql.Identifier(dbname)))
 
 
 def migrate() -> None:
@@ -41,9 +53,13 @@ def migrate() -> None:
             print(f"applied {version}")
 
 
-if __name__ == "__main__":
+def main() -> None:
     try:
         migrate()
     except psycopg.Error as e:
         print(f"migration failed: {e}", file=sys.stderr)
         sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()

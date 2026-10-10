@@ -25,7 +25,7 @@ def main() -> int:
 
     print(f"OK: connected, PostgreSQL {pg_version}")
     if row is None:
-        print("FAIL: vector extension not installed; run: uv run python -m neurax.migrate")
+        print("FAIL: vector extension not installed; run: uv run neurax-migrate")
         return 1
     print(f"OK: vector extension {row[0]} installed")
     return 0

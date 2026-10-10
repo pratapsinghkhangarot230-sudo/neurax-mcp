@@ -18,3 +18,6 @@ Format: `- [date] idea: why it might matter (who suggested it)`
 - [2026-10-07] Team projects: several users sharing one project's memory
 - [2026-10-07] Web UI to browse and edit memory
 - [2026-10-07] Audit log table for every save/supersede/pin event
+
+## Found while using Neurax on itself
+- [2026-10-10] Task done/closed status: a finished task can only be superseded, so open tasks pile up in get_project_context; a "done" state would close them cleanly (Pratap)

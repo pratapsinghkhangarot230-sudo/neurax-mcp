@@ -6,7 +6,6 @@ from uuid import UUID
 
 import psycopg
 import pytest
-from psycopg import sql
 
 TEST_DATABASE_URL = os.environ.get(
     "NEURAX_TEST_DATABASE_URL", "postgresql://neurax:neurax@127.0.0.1:5432/neurax_test"
@@ -21,12 +20,7 @@ from neurax import memory, migrate  # noqa: E402
 def test_database() -> None:
     dbname = psycopg.conninfo.conninfo_to_dict(TEST_DATABASE_URL)["dbname"]
     assert str(dbname).endswith("_test"), "tests must run against a *_test database"
-    admin_url = psycopg.conninfo.make_conninfo(TEST_DATABASE_URL, dbname="postgres")
-    with psycopg.connect(admin_url, autocommit=True) as conn:
-        # Create the test database once; never dropped by the tests.
-        exists = conn.execute("SELECT 1 FROM pg_database WHERE datname = %s", (dbname,))
-        if exists.fetchone() is None:
-            conn.execute(sql.SQL("CREATE DATABASE {}").format(sql.Identifier(str(dbname))))
+    migrate.create_database()  # created once, never dropped by the tests
     migrate.migrate()
 
 

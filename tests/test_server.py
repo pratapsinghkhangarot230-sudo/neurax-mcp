@@ -5,7 +5,9 @@ import json
 import os
 import subprocess
 import sys
+import threading
 import uuid
+from pathlib import Path
 from typing import Any
 
 from mcp import Client
@@ -135,15 +137,18 @@ def _rpc(id: int | None, method: str, params: dict[str, Any] | None = None) -> b
     return (json.dumps(msg) + "\n").encode()
 
 
-def test_stdout_carries_only_json_rpc() -> None:
+def test_stdout_carries_only_json_rpc(tmp_path: Path) -> None:
     """Every byte the server writes to stdout, startup included, must be JSON-RPC."""
-    proc = subprocess.Popen(
-        SERVER_CMD,
-        env={**os.environ, **_env()},
-        stdin=subprocess.PIPE,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-    )
+    stderr_path = tmp_path / "stderr.log"
+    with stderr_path.open("wb") as stderr_file:  # a file, so a full stderr pipe can't block
+        proc = subprocess.Popen(
+            SERVER_CMD,
+            env={**os.environ, **_env()},
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=stderr_file,
+        )
+    assert proc.stdin and proc.stdout
     requests = _rpc(
         1,
         "initialize",
@@ -154,10 +159,30 @@ def test_stdout_carries_only_json_rpc() -> None:
         },
     )
     requests += _rpc(None, "notifications/initialized") + _rpc(2, "tools/list")
-    stdout, stderr = proc.communicate(requests, timeout=120)
+    proc.stdin.write(requests)
+    proc.stdin.flush()
 
-    lines = [line for line in stdout.decode().splitlines() if line.strip()]
-    messages = [json.loads(line) for line in lines]  # fails on any non-JSON output
+    # Keep stdin open until tools/list is answered, like a real client: closing it right
+    # after writing (communicate()) makes the server shut down and can cancel the
+    # in-flight tools/list, which failed CI intermittently. The timer turns a hang into
+    # EOF on stdout, so the test fails instead of blocking forever.
+    watchdog = threading.Timer(120, proc.kill)
+    watchdog.start()
+    messages = []
+    try:
+        for line in proc.stdout:
+            if line.strip():
+                messages.append(json.loads(line))  # fails on any non-JSON output
+                if messages[-1].get("id") == 2:
+                    break
+        proc.stdin.close()
+        rest, _ = proc.communicate(timeout=60)
+    finally:
+        watchdog.cancel()
+        proc.kill()
+    messages += [json.loads(line) for line in rest.splitlines() if line.strip()]
+    stderr = stderr_path.read_bytes()
+
     assert all(m.get("jsonrpc") == "2.0" for m in messages)
     by_id = {m.get("id"): m for m in messages}
     assert by_id[1]["result"]["serverInfo"]["name"] == "neurax"

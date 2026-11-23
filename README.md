@@ -71,7 +71,7 @@ Needs [Docker](https://docs.docker.com/get-docker/) (running) and
 [uv](https://docs.astral.sh/uv/getting-started/installation/).
 
 ```bash
-git clone https://github.com/OWNER/neurax-mcp.git
+git clone https://github.com/pratapsinghkhangarot230-sudo/neurax-mcp.git
 cd neurax-mcp
 scripts/install.sh you@example.com          # macOS / Linux / Git Bash
 ```

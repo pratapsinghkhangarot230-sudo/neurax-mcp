@@ -12,8 +12,7 @@ Neurax is an [MCP](https://modelcontextprotocol.io) server. It works with Claude
 Claude Desktop and any other MCP client. It is open source (Apache-2.0) and local-first: Postgres
 in Docker plus a small local embedding model, with no API keys and no paid calls.
 
-<!-- Demo GIF: record `uv run python examples/demo.py` and save it as docs/demo.gif -->
-<!-- ![Neurax demo](docs/demo.gif) -->
+![Neurax demo](docs/demo.gif)
 
 ## Before / after
 
